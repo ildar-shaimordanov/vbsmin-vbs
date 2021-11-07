@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<package>
+<job>
+<runtime>
+<description><![CDATA[
+Test suite for VBSMin
+]]></description>
+<example><![CDATA[
+Examples:
+
+- Read from the file INPUTFILE and print to the standard output
+  cscript //nologo test-beautify.wsf < INPUTFILE
+
+- Read from the file INPUTFILE and redirect output to another one
+  cscript //nologo test-beautify.wsf < INPUTFILE > OUTPUTFILE
+
+]]></example>
+</runtime>
+<script language="vbscript"><![CDATA[
+
+' Very draft version for beautifying the vbscript code
+
+Option Explicit
+
+Function beautify(text)
+	Dim i, chunks, chunk
+
+	chunks = Split(text, """")
+	For i = 0 To UBound(chunks) Step 2
+		chunk = chunks(i)
+		chunk = Replace(chunk, ":", vbCrLf)
+		chunks(i) = chunk
+	Next
+
+	beautify = Join(chunks, """")
+End Function
+
+Dim text
+
+text = WScript.StdIn.ReadAll()
+text = beautify(text)
+WScript.StdOut.Write(text)
+
+]]></script>
+</job>
+</package>

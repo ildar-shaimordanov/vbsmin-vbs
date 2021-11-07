@@ -1,0 +1,44 @@
+<?xml version="1.0" ?>
+<package>
+<job>
+<runtime>
+<description><![CDATA[
+VBScript code minifier written in VBScript
+]]></description>
+<example><![CDATA[
+Examples:
+
+- Read from the file INPUTFILE and print to the standard output
+  cscript //nologo vbsmin.wsf < INPUTFILE
+
+- Read from the file INPUTFILE and redirect output to another one
+  cscript //nologo vbsmin.wsf < INPUTFILE > OUTPUTFILE
+
+]]></example>
+</runtime>
+<script language="vbscript" src="../lib/vbsmin.vbs"></script>
+<script language="vbscript"><![CDATA[
+
+' To make this script completely standalone and independent:
+' 1. Remove the above tag "<script>" with the reference to the file
+' 2. Put here the content of the library file "../lib/vbsmin.vbs" or
+' even the file "../lib/vbsmin.min.vbs"
+
+' In addition you can convert it to the batch file using "cmdize" from
+' https://github.com/ildar-shaimordanov/cmd.scripts:
+' cmdize vbsmin.wsf
+
+]]></script>
+<script language="vbscript"><![CDATA[
+
+Option Explicit
+
+Dim text
+
+text = WScript.StdIn.ReadAll()
+text = new VBSMin.minify(text)
+WScript.StdOut.Write(text)
+
+]]></script>
+</job>
+</package>

@@ -1,0 +1,29 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+my $colon;
+
+while ( <> ) {
+	# Skip comments.
+	next if /^ \s* '/x;
+
+	m/(\w+) \s+ = \s+ \QChr(58)\E/x and $colon = $1 and next;
+
+	next unless $colon;
+
+	# Split the line by the double quotes.
+	# Process each second chunk starting from the first one.
+	# Join the line back.
+	my @f = split '"';
+	for (my $i = 0; $i <= $#f; $i += 2) {
+		$f[$i] =~ s/$colon/":"/g;
+	}
+	$_ = join '"', @f;
+
+	# Special cases.
+	s/" \s+ & \s+ "//gx;
+} continue {
+	print;
+}

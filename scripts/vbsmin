@@ -1,0 +1,8 @@
+#!/bin/sh
+
+[ $# -gt 0 ] || {
+	echo "Usage: $0 FILE"
+	exit
+}
+
+ruby -r "$( dirname "$0" )/vbsmin.rb" -e "VBSMin.new.minify(ARGV[0])" "$@"
