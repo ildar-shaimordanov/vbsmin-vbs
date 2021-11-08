@@ -122,6 +122,10 @@ Class VBSMin
 
 	Private VB_COLON
 
+	Private NR
+	Private INR
+	Private IFS
+
 	Private re_comment_or_continue
 
 	Private re_left_spaces
@@ -220,10 +224,14 @@ Class VBSMin
 		text = Replace(text, vbCr, vbLf)
 
 		lines = Split(text, vbLf)
-		For i = 0 To UBound(lines)
-			line = lines(i)
+
+		INR = -1
+		ReDim IFS(UBound(lines))
+
+		For NR = 0 To UBound(lines)
+			line = lines(NR)
 			line = remove_comment_and_continuation(line)
-			lines(i) = line
+			lines(NR) = line
 		Next
 
 		text = Join(lines, "")
@@ -254,6 +262,39 @@ Class VBSMin
 				eol = " "
 				text = Left(text, match.FirstIndex) _
 					& match.SubMatches(1)
+				Exit For
+			End If
+		Next
+
+		text = re_left_spaces.Replace(text, "")
+		text = re_right_spaces.Replace(text, "")
+
+		Dim re_if_then
+		Set re_if_then = New RegExp
+		re_if_then.Global = True
+		re_if_then.IgnoreCase = True
+		re_if_then.Pattern = """[^""]*""" _
+			& "|\b(then)[\t\f\v :]+.+" _
+			& "|\b(then)[\t\f\v ]*$" _
+			& "|^[\t\f\v ]*(elseif|else)\b"
+
+		Set matches = re_if_then.Execute(text)
+		For Each match in matches
+			' The single-line If/Then found
+			If match.SubMatches(0) <> "" Then
+				eol = vbCrLf
+				Exit For
+			End If
+			' A multi-line If/Then
+			If match.SubMatches(1) <> "" Then
+				INR = INR + 1
+				IFS(INR) = NR
+				eol = ""
+				text = re_right_spaces.Replace(text, vbCrLf)
+				Exit For
+			End If
+			If match.SubMatches(2) <> "" Then
+				text = re_left_spaces.Replace(text, vbCrLf)
 				Exit For
 			End If
 		Next
