@@ -124,7 +124,8 @@ Class VBSMin
 
 	Private re_comment_or_continue
 
-	Private re_outer_spaces
+	Private re_left_spaces
+	Private re_right_spaces
 	Private re_space_punct
 	Private re_punct_space
 	Private re_inner_colons
@@ -153,43 +154,45 @@ Class VBSMin
 		'
 		' " [^"]* "
 		' |
-		' [\s:]*
+		' [\t\f\v :]*
 		' ( ' | \b rem \b )	# captured in match.submatches(0)
 		' .*
 		' |
-		' ( \w[\s] | \W )	# captured in match.submatches(1)
-		' [\s]* _ $
+		' ( \w[\t\f\v ] | \W )	# captured in match.submatches(1)
+		' [\t\f\v ]* _ $
 		Set re_comment_or_continue = New RegExp
 		re_comment_or_continue.Global = True
 		re_comment_or_continue.IgnoreCase = True
 		re_comment_or_continue.Pattern = """[^""]*""" _
-			& "|[\s:]*('|\brem\b).*" _
-			& "|(\w[\s]|\W)[\s]*_$"
+			& "|[\t\f\v :]*('|\brem\b).*" _
+			& "|(\w[\t\f\v ]|\W)[\t\f\v ]*_$"
 
-		' This regex is used to remove all leading and trailing
+		' These regexs are used to remove leading and/or trailing
 		' white spaces. Applied for the text chunk (a part of
 		' the entire text after splitting by the double quotes)
 		' it quarantees that the chunk will not have any white
 		' spaces at the beginning and end. So after concatenating
 		' (joining with the double quotes) the chunks the entire
 		' text white spaces around double quotes will be removed.
-		Set re_outer_spaces = New RegExp
-		re_outer_spaces.Global = True
-		re_outer_spaces.Pattern = "^[\s]+|[\s]+$"
+		Set re_left_spaces = New RegExp
+		re_left_spaces.Pattern = "^[\t\f\v ]*"
+
+		Set re_right_spaces = New RegExp
+		re_right_spaces.Pattern = "[\t\f\v ]*$"
 
 		' This regex is used to remove white spaces before
 		' punctuation characters only: "[", "]", "(", ")", "<",
 		' ">", "&", ".", ",", ":", "=", "*", "/", "%", "+", "-".
 		Set re_space_punct = New RegExp
 		re_space_punct.Global = True
-		re_space_punct.Pattern = "[\s]+([\[\]()<>&.,:=*/%+-])"
+		re_space_punct.Pattern = "[\t\f\v ]+([\[\]()<>&.,:=*/%+-])"
 
 		' This regex is used to remove white spaces after
 		' punctuation characters only: "[", "]", "(", ")", "<",
 		' ">", "&", ".", ",", ":", "=", "*", "/", "%", "+", "-".
 		Set re_punct_space = New RegExp
 		re_punct_space.Global = True
-		re_punct_space.Pattern = "([\[\]()<>&.,:=*/%+-])[\s]+"
+		re_punct_space.Pattern = "([\[\]()<>&.,:=*/%+-])[\t\f\v ]+"
 
 		' This regex is used to reduce multiple sequential colons
 		' ":" into single one.
@@ -201,7 +204,7 @@ Class VBSMin
 		' words into the single one.
 		Set re_word_space_word = New RegExp
 		re_word_space_word.Global = True
-		re_word_space_word.Pattern = "(\w)[\s]+(\w)"
+		re_word_space_word.Pattern = "(\w)[\t\f\v ]+(\w)"
 
 		' This regex is used to remove all leading and trailing
 		' colons ":" in the entire text.
@@ -271,7 +274,8 @@ Class VBSMin
 		chunks = Split(text, """")
 		For i = 0 To UBound(chunks) Step 2
 			chunk = chunks(i)
-			chunk = re_outer_spaces.Replace(chunk, "")
+			chunk = re_left_spaces.Replace(chunk, "")
+			chunk = re_right_spaces.Replace(chunk, "")
 			chunk = re_space_punct.Replace(chunk, "$1")
 			chunk = re_punct_space.Replace(chunk, "$1")
 			chunk = re_inner_colons.Replace(chunk, ":")
